@@ -22,8 +22,8 @@ if sim
 end
 
 if importData
-    tdelay_start = -1;
-    tdelay_end = 100;
+    tdelay_start = -5;
+    tdelay_end = 10;
     tdelay_norm = 5;
 
     if modVin == 1
@@ -80,7 +80,7 @@ else
     xlabel('Time delay (ps)');
     ylabel('\DeltaT (K)');
     legend('T_E (electrons)','T_L (lattice)','Location','best');
-    xlim([min(tdelay_model)*1e12, 100]);
+    xlim([min(tdelay_model)*1e12, 10]);
     grid on;
 
     figure(2);

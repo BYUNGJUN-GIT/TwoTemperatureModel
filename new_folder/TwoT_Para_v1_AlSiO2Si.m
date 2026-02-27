@@ -1,8 +1,8 @@
 function [h,dx,nx,z0,LambdaL,LambdaE,CL,gammaE,T0,Gll,gEL,tdelay_model,delta_time,nt,heatL,heatE,PulseTemp,Data,fold_name,sample_name,para] = TwoT_Para_v1_AlSiO2Si()
 
 %% sample geometry: Al / SiO2 / Si
-h  = [80 300 5e5]*1e-9;      % layer thicknesses (m)
-dx = [2 10 500]*1e-9;        % spatial increments (m)
+h  = [75.1 105 50000]*1e-9;      % layer thicknesses (m)
+dx = [2 5 500]*1e-9;        % spatial increments (m)
 nx = round(h./dx);
 
 z0 = zeros(sum(nx),1);
@@ -18,14 +18,14 @@ end
 %% material properties
 T0 = 295;
 
-LambdaL = [237, 1.4, 130];      % lattice thermal conductivity [W/m/K]
-LambdaE = [180, 1e-4, 1e-4];    % electron thermal conductivity [W/m/K]
-CL = [2.42e6, 1.55e6, 1.65e6];  % lattice heat capacity [J/m^3/K]
+LambdaL = [155, 1.32, 130];      % lattice thermal conductivity [W/m/K]
+LambdaE = [155, 1e-4, 1e-4];    % electron thermal conductivity [W/m/K]
+CL = [2.43e6, 1.62e6, 1.64e6];  % lattice heat capacity [J/m^3/K]
 gammaE = [97, 1e-6, 1e-6];      % Ce = gammaE*Te [J/m^3/K^2]
-gEL = [2.4e17, 1e6, 1e6];       % electron-lattice coupling [W/m^3/K]
+gEL = [0.5e17, 1, 1];       % electron-lattice coupling [W/m^3/K]
 
 % interface lattice conductance [W/m^2/K], interface i-(i+1)
-Gll = [1.5e8; 1.2e8];
+Gll = [3e8 1e10];
 
 %% time discretization
 dt_max = 5e-12;
@@ -62,12 +62,12 @@ end
 
 %% intensity profile of pump pulse
 PulseTemp = zeros(nt,1);
-importPulse = 0;
+importPulse = 1;
 % 0 = use Gaussian pulse by FWHM
 % 1 = import pulse profile from PulseWidth_AlSiO2Si.mat
 
 if importPulse == 1
-    load('PulseWidth_AlSiO2Si.mat','PulseWidth')
+    load('PulseWidth_20250530_kbj.mat','PulseWidth')
     td = PulseWidth(:,1)*1e-12;
     TempProf = PulseWidth(:,2);
     for i = 1:nt
@@ -86,10 +86,10 @@ else
 end
 
 %% scale source by absorbed fluence
-Pump = 4e-3;   % [W]
+Pump = 18.9e-3;   % [W]
 Abs = 0.12;    % total absorbance
-w0 = 5.0e-6;   % [m]
-LensT = 0.8;
+w0 = 12.0e-6;   % [m]
+LensT = 0.9;
 Fluence = Pump*LensT*Abs/(80e6/2*pi*w0^2); % [J/m^2]
 
 F2 = sum(dx(1)*heatE(I_heat)) * sum(PulseTemp.*delta_time(:));
@@ -97,7 +97,7 @@ heatE(I_heat) = heatE(I_heat)*Fluence/F2;
 
 %% load raw data (optional comparison)
 fold_name = 'new_folder';
-sample_name = 'AlSiO2Si_default';
+sample_name = 'AlSiO2';
 
 Data = zeros(4);
 data_name = [sample_name, '.mat'];
@@ -116,7 +116,7 @@ else
     Data = RawData;
 
     % optional lock-in phase correction (same style as ThreeT)
-    fmod = 2e6;
+    fmod = 10.9e6;
     ii = sqrt(-1);
     ttt = RawData(:,2);
     Vin = RawData(:,3);
