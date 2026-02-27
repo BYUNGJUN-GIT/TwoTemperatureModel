@@ -1,4 +1,4 @@
-function [TL,TE] = TwoT_CeLeTdep_Pulse_v1(dx,nx,LambdaL,LambdaE,CL,gammaE,T0,Gll,gEL,tdelay_model,delta_time,nt,heatL,heatE,PulseTemp)
+function [TL,TE] = TwoT_CeLeTdep_Pulse_v1(dx,nx,LambdaL,LambdaE,CL,gammaE,T0,G,gEL,tdelay_model,delta_time,nt,heatL,heatE,PulseTemp)
 % Two-temperature model solver (lattice + electron)
 
 N = sum(nx);
@@ -44,8 +44,8 @@ for m = 1:nt
         if i == 1
             GL_left = 0; GE_left = 0; % adiabatic top
         else
-            GL_left = link_cond(i-1,i,kL,dx,layer_of_node,Gll,true);
-            GE_left = link_cond(i-1,i,kE,dx,layer_of_node,Gll,false);
+            GL_left = link_cond(i-1,i,kL,dx,layer_of_node,G,true);
+            GE_left = link_cond(i-1,i,kE,dx,layer_of_node,G,false);
         end
 
         % right link
@@ -54,8 +54,8 @@ for m = 1:nt
             GE_right = 2*kE(i)/dx(layer_of_node(i));
             T_right = T0;
         else
-            GL_right = link_cond(i,i+1,kL,dx,layer_of_node,Gll,true);
-            GE_right = link_cond(i,i+1,kE,dx,layer_of_node,Gll,false);
+            GL_right = link_cond(i,i+1,kL,dx,layer_of_node,G,true);
+            GE_right = link_cond(i,i+1,kE,dx,layer_of_node,G,false);
             T_right = 0;
         end
 
@@ -95,20 +95,35 @@ end
 
 end
 
-function G = link_cond(i,j,k,dx,layer_of_node,Gll,isLattice)
+function Glink = link_cond(i,j,k,dx,layer_of_node,G,isLattice)
 li = layer_of_node(i);
 lj = layer_of_node(j);
 ri = dx(li)/2;
 rj = dx(lj)/2;
 
 if li == lj
-    G = 1/(ri/max(k(i),eps) + rj/max(k(j),eps));
+    Glink = 1/(ri/max(k(i),eps) + rj/max(k(j),eps));
 else
+    iIf = min(li,lj);
+    Gmat = interface_matrix(G, iIf);
     if isLattice
-        gInt = Gll(min(li,lj));
-        G = 1/(ri/max(k(i),eps) + 1/max(gInt,eps) + rj/max(k(j),eps));
+        gInt = Gmat(1,1);
     else
-        G = 1/(ri/max(k(i),eps) + rj/max(k(j),eps));
+        gInt = Gmat(2,2);
     end
+    Glink = 1/(ri/max(k(i),eps) + 1/max(gInt,eps) + rj/max(k(j),eps));
+end
+end
+
+
+function Gmat = interface_matrix(G, iIf)
+if ndims(G) == 3
+    Gmat = G(:,:,iIf);
+elseif size(G,2) == 4
+    Grow = G(iIf,:);
+    Gmat = [Grow(1), Grow(2); Grow(3), Grow(4)];
+else
+    % backward compatibility: 1 value/interface means lattice only
+    Gmat = [G(iIf), 0; 0, 1e20];
 end
 end
