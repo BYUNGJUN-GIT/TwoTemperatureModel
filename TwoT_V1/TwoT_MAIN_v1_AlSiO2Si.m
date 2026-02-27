@@ -2,7 +2,7 @@
 % T_L = lattice (phonon) temperature
 % T_E = electron temperature
 
-[h,dx,nx,z0,LambdaL,LambdaE,CL,gammaE,T0,Gll,gEL,tdelay_model,delta_time,nt,heatL,heatE,PulseTemp,Data,fold_name,sample_name,para] = TwoT_Para_v1_AlSiO2Si();
+[h,dx,nx,z0,LambdaL,LambdaE,CL,gammaE,T0,G,gEL,tdelay_model,delta_time,nt,heatL,heatE,PulseTemp,Data,fold_name,sample_name,para] = TwoT_Para_v1_AlSiO2Si();
 
 para_path = fullfile(pwd, fold_name, ['Para_', sample_name, '.mat']);
 T_path = fullfile(pwd, fold_name, ['T_', sample_name, '.csv']);
@@ -10,13 +10,14 @@ T_path = fullfile(pwd, fold_name, ['T_', sample_name, '.csv']);
 sim = 1;
 importData = size(Data,1) > 4;
 modVin = 0; % set 1 for offset correction at negative delay
+sens_th = 0; % sensitivities to thermal properties (can take long time)
 
 % default readout point: center of Al
 % IndFit = max(1, round(nx(1)));
 IndFit = 1;
 
 if sim
-    [TL,TE] = TwoT_CeLeTdep_Pulse_v1(dx,nx,LambdaL,LambdaE,CL,gammaE,T0,Gll,gEL,tdelay_model,delta_time,nt,heatL,heatE,PulseTemp);
+    [TL,TE] = TwoT_CeLeTdep_Pulse_v1(dx,nx,LambdaL,LambdaE,CL,gammaE,T0,G,gEL,tdelay_model,delta_time,nt,heatL,heatE,PulseTemp);
     save(para_path);
 
     T_Fit = [1e12*tdelay_model(:), TL(:,IndFit), TE(:,IndFit)];
@@ -93,4 +94,12 @@ else
     grid on;
 
     disp(['TTM done. Outputs saved to ', T_path]);
+end
+
+if sens_th
+    [Sens,Sensnorm] = TwoT_CeLeTdep_Pulse_SENS_v1(dx,nx,LambdaL,LambdaE,CL,gammaE,...
+        T0,G,gEL,tdelay_model,delta_time,nt,heatL,heatE,PulseTemp,IndFit);
+
+    disp('Sensitivity calculation completed for TE at IndFit.')
+    disp('Available outputs: Sens, Sensnorm')
 end

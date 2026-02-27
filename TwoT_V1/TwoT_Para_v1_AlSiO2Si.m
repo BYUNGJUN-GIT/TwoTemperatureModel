@@ -1,4 +1,4 @@
-function [h,dx,nx,z0,LambdaL,LambdaE,CL,gammaE,T0,Gll,gEL,tdelay_model,delta_time,nt,heatL,heatE,PulseTemp,Data,fold_name,sample_name,para] = TwoT_Para_v1_AlSiO2Si()
+function [h,dx,nx,z0,LambdaL,LambdaE,CL,gammaE,T0,G,gEL,tdelay_model,delta_time,nt,heatL,heatE,PulseTemp,Data,fold_name,sample_name,para] = TwoT_Para_v1_AlSiO2Si()
 
 %% sample geometry: Al / SiO2 / Si
 h  = [75.1 105 50000]*1e-9;      % layer thicknesses (m)
@@ -24,8 +24,13 @@ CL = [2.43e6, 1.62e6, 1.64e6];  % lattice heat capacity [J/m^3/K]
 gammaE = [135, 1e-6, 1e-6];      % Ce = gammaE*Te [J/m^3/K^2]
 gEL = [2.4e17, 1, 1];       % electron-lattice coupling [W/m^3/K]
 
-% interface lattice conductance [W/m^2/K], interface i-(i+1)
-Gll = [3e8 1e8];
+% interface conductance matrix [W/m^2/K], one row per interface
+% columns correspond to [G(1,1), G(1,2), G(2,1), G(2,2)] for each interface
+% (1,1): lattice/phonon channel, (2,2): electron channel
+G = [
+    3e8, 0, 0, 1e20;  % Al -- SiO2
+    1e8, 0, 0, 1e20   % SiO2 -- Si
+];
 
 %% time discretization
 dt_max = 5e-12;
@@ -136,7 +141,7 @@ para.LambdaE = LambdaE;
 para.CL = CL;
 para.gammaE = gammaE;
 para.T0 = T0;
-para.Gll = Gll;
+para.G = G;
 para.gEL = gEL;
 para.tdelay_model = tdelay_model;
 para.delta_time = delta_time;
