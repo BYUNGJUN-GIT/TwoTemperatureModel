@@ -1,0 +1,32 @@
+# Two-temperature model (TTM) for Al/SiO2/Si
+
+이 폴더는 기존 `ThreeT_*` 코드 흐름과 유사하게 사용할 수 있는 2온도 모델 세트입니다.
+
+## 파일 구성
+- `TwoT_Para_v1_AlSiO2Si.m`: 샘플 geometry/material/pump 조건 정의 + heat absorption + pulse profile + raw data import
+- `TwoT_CeLeTdep_Pulse_v1.m`: 1D TTM solver (electron-lattice coupled diffusion)
+- `TwoT_CeLeTdep_Pulse_SENS_v1.m`: thermal parameter sensitivity (`LambdaL`, `LambdaE`, `CL`, `gammaE`, `gEL`, `Gll`)
+- `TwoT_CeLeTdep_Pulse_SENS_z_v1.m`: geometry/source sensitivity (`opd`, pulse width, thickness)
+- `TwoT_Para_z_v1.m`: sensitivity 계산용 geometry/source/pulse 변형 생성
+- `TwoT_MAIN_v1_AlSiO2Si.m`: 실행 스크립트 (계산, raw data 비교 플롯, CSV 저장, sensitivity 옵션)
+
+## 사용 방법
+1. MATLAB에서 현재 작업 경로를 repository root로 설정
+2. `new_folder/TwoT_MAIN_v1_AlSiO2Si.m` 실행
+3. sensitivity 계산이 필요하면 `sens_th = 1`, `sens_z = 1`로 변경
+4. 결과 파일 확인
+   - `new_folder/Para_AlSiO2Si_default.mat`
+   - `new_folder/T_AlSiO2Si_default.csv`
+
+## 옵션 파일 (선택)
+- `AbsCal_AlSiO2Si.mat` (변수명: `AbsCal`) : 흡수 프로파일 직접 로드
+- `PulseWidth_AlSiO2Si.mat` (변수명: `PulseWidth`) : 펌프-프로브 cross-correlation 로드
+- `new_folder/AlSiO2Si_default.mat` (변수명: `RawData`) : 측정 데이터 로드 및 모델 비교
+
+## 출력
+- `T_E`: 전자 온도
+- `T_L`: 격자(포논) 온도
+- `Sens`, `Sensnorm`: thermal sensitivity
+- `Sens_z`, `Sensnorm_z`: geometry/source sensitivity
+
+> 참고: TTM에서는 보통 격자와 포논을 동일한 thermal bath로 취급합니다.
