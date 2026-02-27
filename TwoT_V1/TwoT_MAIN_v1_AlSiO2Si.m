@@ -10,6 +10,7 @@ T_path = fullfile(pwd, fold_name, ['T_', sample_name, '.csv']);
 sim = 1;
 importData = size(Data,1) > 4;
 modVin = 0; % set 1 for offset correction at negative delay
+sens_th = 0; % sensitivities to thermal properties (can take long time)
 
 % default readout point: center of Al
 % IndFit = max(1, round(nx(1)));
@@ -93,4 +94,12 @@ else
     grid on;
 
     disp(['TTM done. Outputs saved to ', T_path]);
+end
+
+if sens_th
+    [Sens,Sensnorm] = TwoT_CeLeTdep_Pulse_SENS_v1(dx,nx,LambdaL,LambdaE,CL,gammaE,...
+        T0,Gll,gEL,tdelay_model,delta_time,nt,heatL,heatE,PulseTemp,IndFit);
+
+    disp('Sensitivity calculation completed for TE at IndFit.')
+    disp('Available outputs: Sens, Sensnorm')
 end
